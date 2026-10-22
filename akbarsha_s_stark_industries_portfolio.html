@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akbarsha S | Stark Industries Portfolio & J.A.R.V.I.S. HUD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for iconic HUD symbols -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Orbitron & Rajdhani -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                    },
+                    colors: {
+                        stark: {
+                            cyan: '#00f0ff',
+                            darkCyan: '#0094a6',
+                            crimson: '#e11d48',
+                            hotrod: '#ff003c',
+                            gold: '#f59e0b',
+                            brass: '#d97706',
+                            dark: '#030712',
+                            panel: 'rgba(7, 15, 30, 0.85)',
+                            border: 'rgba(0, 240, 255, 0.28)',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 22s linear infinite',
+                        'spin-reverse': 'spin-reverse 16s linear infinite',
+                        'scanline': 'scanline 5s linear infinite',
+                    },
+                    keyframes: {
+                        'spin-reverse': {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(-360deg)' }
+                        },
+                        'scanline': {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(800%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030712;
+            color: #d8eaff;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 12%, rgba(0, 240, 255, 0.09) 0%, transparent 55%),
+                radial-gradient(circle at 90% 70%, rgba(225, 29, 72, 0.06) 0%, transparent 45%),
+                linear-gradient(rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+
+        /* Stark Corner Chamfer Framing */
+        .hud-card {
+            position: relative;
+            background: rgba(6, 14, 28, 0.82);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            backdrop-filter: blur(14px);
+        }
+        .hud-card::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px;
+            width: 14px; height: 14px;
+            border-top: 2px solid #00f0ff;
+            border-left: 2px solid #00f0ff;
+        }
+        .hud-card::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; right: -2px;
+            width: 14px; height: 14px;
+            border-bottom: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+        }
+
+        .hud-card-gold {
+            position: relative;
+            background: rgba(18, 14, 5, 0.85);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            backdrop-filter: blur(14px);
+        }
+        .hud-card-gold::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px;
+            width: 14px; height: 14px;
+            border-top: 2px solid #f59e0b;
+            border-left: 2px solid #f59e0b;
+        }
+        .hud-card-gold::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; right: -2px;
+            width: 14px; height: 14px;
+            border-bottom: 2px solid #f59e0b;
+            border-right: 2px solid #f59e0b;
+        }
+
+        .hud-card-crimson {
+            position: relative;
+            background: rgba(22, 6, 12, 0.85);
+            border: 1px solid rgba(225, 29, 72, 0.35);
+            backdrop-filter: blur(14px);
+        }
+        .hud-card-crimson::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px;
+            width: 14px; height: 14px;
+            border-top: 2px solid #e11d48;
+            border-left: 2px solid #e11d48;
+        }
+        .hud-card-crimson::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; right: -2px;
+            width: 14px; height: 14px;
+            border-bottom: 2px solid #e11d48;
+            border-right: 2px solid #e11d48;
+        }
+
+        .arc-glow {
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.55), inset 0 0 15px rgba(0, 240, 255, 0.35);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0094a6;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-stark-cyan selection:text-black">
+
+    <!-- TOP HUD NAVIGATION & STATUS HEADER -->
+    <header class="fixed top-0 inset-x-0 z-50 bg-[#030712]/90 backdrop-blur-md border-b border-stark-cyan/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Mark -->
+            <div class="flex items-center space-x-3">
+                <div class="relative w-9 h-9 rounded-full border border-stark-cyan/60 flex items-center justify-center arc-glow bg-cyan-950/40">
+                    <div class="w-3.5 h-3.5 bg-stark-cyan rounded-full animate-ping opacity-75"></div>
+                    <div class="w-2.5 h-2.5 bg-white rounded-full absolute shadow-[0_0_10px_#fff]"></div>
+                </div>
+                <div>
+                    <span class="font-orbitron font-extrabold text-base sm:text-lg tracking-wider text-white flex items-center gap-1.5">
+                        AKBARSHA<span class="text-stark-cyan">.STARK</span>
+                    </span>
+                    <span class="text-[9px] tracking-widest font-mono text-cyan-400 block -mt-1 font-semibold">
+                        J.A.R.V.I.S. OS // MARK-LXXXV
+                    </span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-7 font-rajdhani text-sm font-semibold tracking-wider uppercase">
+                <a href="#hero" class="text-stark-cyan hover:text-white transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-atom text-xs"></i> Arc Core
+                </a>
+                <a href="#about" class="text-slate-300 hover:text-stark-cyan transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-fingerprint text-xs"></i> Biometric HUD
+                </a>
+                <a href="#projects" class="text-slate-300 hover:text-stark-cyan transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-xs"></i> Stark Archive
+                </a>
+                <a href="#skills" class="text-slate-300 hover:text-stark-cyan transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-microchip text-xs"></i> Diagnostics
+                </a>
+                <a href="#terminal" class="text-slate-300 hover:text-stark-cyan transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-terminal text-xs"></i> J.A.R.V.I.S.
+                </a>
+                <a href="#contact" class="text-slate-300 hover:text-stark-cyan transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-satellite-dish text-xs"></i> Uplink
+                </a>
+            </nav>
+
+            <!-- SFX & Contact Action -->
+            <div class="flex items-center space-x-3">
+                <button id="sfxToggleBtn" onclick="toggleMasterAudio()" class="px-3 py-1.5 rounded border border-stark-cyan/40 bg-stark-cyan/10 hover:bg-stark-cyan/25 text-stark-cyan text-xs font-mono font-bold tracking-wider flex items-center gap-1.5 transition">
+                    <i id="sfxIcon" class="fa-solid fa-volume-high"></i>
+                    <span id="sfxLabel" class="hidden sm:inline">SFX: ON</span>
+                </button>
+                <a href="#contact" class="px-3.5 py-1.5 rounded bg-gradient-to-r from-stark-crimson to-red-600 hover:from-red-600 hover:to-stark-crimson text-white text-xs font-orbitron font-bold tracking-wider shadow-lg shadow-red-900/40 border border-yellow-500/30 transition transform hover:scale-105">
+                    CONTACT
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <main class="relative pt-20">
+
+        <!-- HERO SECTION: FEATURING AKBARSHA S. PORTRAIT VIDEO IN CENTRAL HUD -->
+        <section id="hero" class="relative min-h-[92vh] flex items-center justify-center px-4 py-12 overflow-hidden">
+            <!-- Background HUD Compass Rings -->
+            <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                <div class="w-[520px] h-[520px] md:w-[720px] md:h-[720px] rounded-full border border-stark-cyan animate-spin-slow"></div>
+                <div class="w-[420px] h-[420px] md:w-[580px] md:h-[580px] rounded-full border border-dashed border-stark-gold animate-spin-reverse absolute"></div>
+                <div class="w-[280px] h-[280px] md:w-[380px] md:h-[380px] rounded-full border border-stark-crimson/50 absolute"></div>
+            </div>
+
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
+                
+                <!-- Left Telemetry & Identity -->
+                <div class="lg:col-span-4 space-y-5 order-2 lg:order-1 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded border border-stark-cyan/40 bg-stark-cyan/10 text-stark-cyan text-xs font-orbitron font-bold">
+                        <span class="w-2 h-2 rounded-full bg-stark-cyan animate-ping"></span>
+                        STARK PROTOCOL // MARK-LXXXV ARMORED
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-orbitron font-black uppercase text-white tracking-tight leading-tight">
+                        I AM <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-stark-cyan via-sky-300 to-amber-300">
+                            AKBARSHA S
+                        </span>
+                    </h1>
+
+                    <p class="font-rajdhani text-lg sm:text-xl text-cyan-200 font-semibold tracking-wide">
+                        B.Tech Computer Science & Engineering Student <br>
+                        <span class="text-stark-gold text-sm uppercase tracking-widest font-mono">
+                            Carmel College Of Engineering And Technology '29
+                        </span>
+                    </p>
+
+                    <p class="text-sm text-slate-300 leading-relaxed max-w-md mx-auto lg:mx-0 font-normal">
+                        Engineering at the nexus of <span class="text-stark-cyan font-semibold">Web Development</span>, <span class="text-stark-gold font-semibold">Artificial Intelligence</span>, and <span class="text-stark-crimson font-semibold">Cybersecurity</span>. Building robust, intelligent software designed to solve real-world challenges.
+                    </p>
+
+                    <!-- Tactical Metrics Bar -->
+                    <div class="grid grid-cols-3 gap-2.5 pt-2 max-w-sm mx-auto lg:mx-0">
+                        <div class="p-2.5 rounded bg-slate-900/80 border border-cyan-500/30 text-center">
+                            <span class="block text-[10px] text-cyan-400 font-mono">CORE POWER</span>
+                            <span class="text-lg font-bold text-white font-orbitron">3000%</span>
+                        </div>
+                        <div class="p-2.5 rounded bg-slate-900/80 border border-amber-500/30 text-center">
+                            <span class="block text-[10px] text-amber-400 font-mono">ARMOR SYNC</span>
+                            <span class="text-lg font-bold text-white font-orbitron">100%</span>
+                        </div>
+                        <div class="p-2.5 rounded bg-slate-900/80 border border-rose-500/30 text-center">
+                            <span class="block text-[10px] text-rose-400 font-mono">J.A.R.V.I.S.</span>
+                            <span class="text-lg font-bold text-white font-orbitron">ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Call To Action -->
+                    <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
+                        <button onclick="replaySuitVideo()" class="px-5 py-3 rounded bg-gradient-to-r from-stark-crimson via-red-600 to-amber-600 text-white font-orbitron font-bold text-xs uppercase tracking-widest shadow-lg shadow-red-900/50 hover:brightness-110 active:scale-95 transition flex items-center gap-2">
+                            <i class="fa-solid fa-play"></i> Replay Suit-Up Sequence
+                        </button>
+                        <a href="#projects" class="px-5 py-3 rounded border border-stark-cyan/60 bg-stark-cyan/10 hover:bg-stark-cyan/20 text-stark-cyan font-orbitron font-bold text-xs uppercase tracking-widest transition flex items-center gap-2">
+                            <i class="fa-solid fa-fingerprint"></i> View Intel
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Center: AKBARSHA S. PORTRAIT WITH DIRECT VIDEO EMBED -->
+                <div class="lg:col-span-5 flex flex-col items-center justify-center order-1 lg:order-2">
+                    
+                    <div class="relative w-72 sm:w-80 md:w-[350px] aspect-[9/16] max-h-[580px] flex items-center justify-center">
+                        
+                        <!-- Ambient Reactor Aura -->
+                        <div class="absolute inset-0 bg-gradient-to-b from-stark-cyan/25 via-stark-crimson/15 to-stark-gold/20 rounded-3xl blur-2xl -z-10"></div>
+                        
+                        <!-- Futuristic HUD Bracket Frame -->
+                        <div class="absolute -inset-3 border border-stark-cyan/50 rounded-3xl pointer-events-none z-20 shadow-[0_0_25px_rgba(0,240,255,0.25)]">
+                            <div class="absolute top-2 left-3 text-[9px] font-mono text-stark-cyan flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                                BIOMETRIC DOSSIER // SUBJECT: AKBARSHA S.
+                            </div>
+                            <div class="absolute bottom-2 right-3 text-[9px] font-orbitron text-stark-gold">
+                                <i class="fa-solid fa-shield-halved mr-1"></i> MARK-LXXXV SUIT
+                            </div>
+                        </div>
+
+                        <!-- Dedicated Video Container -->
+                        <div id="videoContainer" class="relative w-full h-full rounded-2xl overflow-hidden border-2 border-stark-cyan/70 shadow-[0_0_35px_rgba(0,240,255,0.3)] bg-[#020617] flex items-center justify-center group cursor-pointer" onclick="handleVideoContainerClick(event)">
+                            
+                            <!-- Video Element playing Akbarsha's Suit-Up & Mask Opening Clip -->
+                            <video id="starkVideo"
+                                   autoplay
+                                   loop
+                                   muted
+                                   playsinline
+                                   preload="auto"
+                                   poster="1000083080.jpg"
+                                   class="w-full h-full object-cover object-center filter contrast-105"
+                                   onerror="handleVideoFallback(this)">
+                                <source src="gemini_generated_video_809125a6.mp4" type="video/mp4">
+                                <source src="http://googleusercontent.com/generated_video_content/10620619256530277293" type="video/mp4">
+                                <source src="welcome.mp4" type="video/mp4">
+                            </video>
+
+                            <!-- Unmute Audio Callout Banner (Prompt to hear Akbarsha's voice) -->
+                            <div id="unmutePromptBanner" onclick="unmuteStarkVideo(event)" class="absolute top-4 inset-x-3 z-30 bg-black/85 backdrop-blur-md border border-stark-gold/70 p-2.5 rounded-xl flex items-center justify-between text-stark-gold text-[11px] font-orbitron shadow-xl animate-pulse hover:bg-black transition">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-volume-high text-cyan-400 text-sm"></i>
+                                    <span class="tracking-wide">TAP TO UNMUTE J.A.R.V.I.S. AUDIO</span>
+                                </div>
+                                <span class="bg-stark-gold text-black px-2 py-0.5 rounded text-[10px] font-black uppercase">LISTEN</span>
+                            </div>
+
+                            <!-- Fallback Photo Element (in case video cannot be decoded) -->
+                            <img id="fallbackPhoto" 
+                                 src="1000083080.jpg" 
+                                 alt="Akbarsha S Portrait" 
+                                 class="hidden w-full h-full object-cover object-center filter contrast-105"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/400x700/030712/00f0ff?text=Akbarsha+S.+Portrait';"
+                            />
+
+                            <!-- HUD Target Reticle & Telemetry Overlaid on Video -->
+                            <div class="absolute inset-0 pointer-events-none flex flex-col justify-between p-3.5 z-10">
+                                <div class="flex justify-between items-start">
+                                    <div class="p-1.5 bg-black/80 backdrop-blur-sm rounded border border-cyan-400/50 text-[9px] font-mono text-cyan-300 leading-tight">
+                                        <div class="flex items-center gap-1 text-emerald-400 font-bold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            NANOTECH ENGAGED
+                                        </div>
+                                        <div>HEART RATE: <span id="hudBpm" class="text-white font-bold">78 BPM</span></div>
+                                        <div>VISOR STATUS: <span class="text-stark-gold font-bold">OPEN / RETRACTED</span></div>
+                                    </div>
+                                    <div class="text-right text-[9px] font-mono text-stark-gold bg-black/80 backdrop-blur-sm px-2 py-1 rounded border border-amber-500/50">
+                                        <i class="fa-solid fa-circle-dot text-cyan-400 mr-1 animate-ping"></i> LIVE FEED
+                                    </div>
+                                </div>
+
+                                <!-- Central Reticle Ring -->
+                                <div class="flex justify-center items-center opacity-60 group-hover:opacity-95 transition duration-300">
+                                    <div class="w-24 h-24 border border-cyan-400/40 rounded-full flex items-center justify-center animate-spin-slow">
+                                        <div class="w-16 h-16 border border-dashed border-rose-500/60 rounded-full animate-spin-reverse flex items-center justify-center">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-stark-cyan shadow-[0_0_10px_#00f0ff]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Status HUD Bar -->
+                                <div class="text-[9px] font-mono text-cyan-300 bg-black/85 backdrop-blur-sm p-1.5 rounded border border-cyan-500/40 flex justify-between items-center">
+                                    <span>AKBARSHA S. // PILOT</span>
+                                    <span class="text-stark-gold font-bold">ARC CORE: 100%</span>
+                                </div>
+                            </div>
+
+                            <!-- In-Video Tactile Controls -->
+                            <div class="absolute bottom-11 inset-x-3 z-20 flex items-center justify-center gap-2 opacity-90 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
+                                <button onclick="toggleVideoPlay()" title="Play / Pause Footage" class="px-2.5 py-1 rounded bg-black/80 hover:bg-cyan-950 border border-cyan-400 text-cyan-300 text-[10px] font-orbitron font-bold flex items-center gap-1.5 backdrop-blur transition">
+                                    <i id="playIcon" class="fa-solid fa-pause"></i>
+                                    <span id="playText">PAUSE</span>
+                                </button>
+                                <button onclick="replaySuitVideo()" title="Replay Suit-up & Mask Reveal" class="px-2.5 py-1 rounded bg-black/80 hover:bg-amber-950 border border-amber-400 text-amber-300 text-[10px] font-orbitron font-bold flex items-center gap-1.5 backdrop-blur transition">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span>REPLAY</span>
+                                </button>
+                                <button onclick="toggleVideoMuteState()" title="Audio Stream" class="px-2.5 py-1 rounded bg-black/80 hover:bg-rose-950 border border-rose-400 text-rose-300 text-[10px] font-orbitron font-bold flex items-center gap-1.5 backdrop-blur transition">
+                                    <i id="muteIcon" class="fa-solid fa-volume-xmark"></i>
+                                    <span id="muteText">UNMUTE</span>
+                                </button>
+                                <button onclick="fullscreenVideoHUD()" title="Fullscreen" class="px-2 py-1 rounded bg-black/80 hover:bg-slate-800 border border-slate-500 text-slate-300 text-[10px] backdrop-blur transition">
+                                    <i class="fa-solid fa-expand"></i>
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Video Sub-Action & Device File Picker -->
+                    <div class="mt-4 flex flex-col items-center gap-2">
+                        <button onclick="replaySuitVideo()" class="text-xs font-orbitron text-stark-gold border border-stark-gold/50 px-3.5 py-1.5 rounded-lg bg-amber-950/20 hover:bg-amber-950/40 transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles text-stark-gold"></i>
+                            <span>RE-TRIGGER SUIT-UP & VISOR SEQUENCE</span>
+                        </button>
+                        
+                        <!-- Local file alternative for test/replace -->
+                        <label class="text-[10px] font-mono text-cyan-400/80 hover:text-cyan-300 cursor-pointer flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-file-video"></i> Replace / Test Custom Video
+                            <input type="file" accept="video/*" class="hidden" onchange="loadLocalCustomVideo(event)">
+                        </label>
+                    </div>
+
+                </div>
+
+                <!-- Right: Interactive Arc Reactor & Bio Coordinates -->
+                <div class="lg:col-span-3 space-y-4 order-3">
+                    
+                    <!-- Arc Reactor Widget -->
+                    <div class="hud-card p-5 rounded-xl text-center relative overflow-hidden group">
+                        <span class="text-[10px] font-mono tracking-widest text-cyan-400 block mb-2 font-bold uppercase">
+                            CORE ARC REACTOR
+                        </span>
+
+                        <!-- Interactive Pulsing Arc Reactor Graphic -->
+                        <div class="relative w-36 h-36 mx-auto my-3 cursor-pointer" onclick="overchargeReactorCore()" title="Click to discharge Repulsor!">
+                            <div class="w-full h-full rounded-full border-4 border-stark-cyan/40 flex items-center justify-center relative arc-glow bg-black/70">
+                                <div class="w-28 h-28 rounded-full border-2 border-dashed border-stark-gold animate-spin-slow"></div>
+                                <div class="w-20 h-20 rounded-full border-2 border-cyan-400 flex items-center justify-center animate-spin-reverse absolute">
+                                    <div class="w-12 h-12 rounded-full bg-cyan-400/30 flex items-center justify-center">
+                                        <div class="w-6 h-6 rounded-full bg-white arc-glow shadow-[0_0_15px_#fff]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-xs font-rajdhani text-slate-300 font-semibold">
+                            ENERGY DENSITY: <span id="reactorPowerText" class="text-stark-cyan font-orbitron font-bold">100%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden border border-cyan-900">
+                            <div id="reactorPowerBar" class="bg-gradient-to-r from-stark-cyan via-amber-400 to-rose-500 h-1.5 rounded-full transition-all duration-300" style="width: 100%"></div>
+                        </div>
+
+                        <p class="text-[10px] text-cyan-400/80 mt-3 font-mono">
+                            [ CLICK REACTOR TO PULSE REPULSOR ]
+                        </p>
+                    </div>
+
+                    <!-- Quick Location & Uplink Card -->
+                    <div class="hud-card p-4 rounded-xl space-y-2.5">
+                        <div class="text-xs font-orbitron text-stark-gold font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-stark-crimson"></i> DEPLOYMENT BASE
+                        </div>
+                        <div class="text-sm font-semibold text-white font-rajdhani">Alappuzha, Kerala, India</div>
+                        <div class="text-[11px] text-slate-400 font-mono">Affiliation: Carmel College of Engg.</div>
+                        <div class="pt-2 border-t border-cyan-900/50 flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-mono">LINKEDIN UPLINK:</span>
+                            <a href="https://linkedin.com/in/akbarsha-s-032968322" target="_blank" rel="noopener noreferrer" class="text-stark-cyan hover:underline font-bold flex items-center gap-1 font-mono">
+                                VERIFIED <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: BIOMETRIC INTEL / ABOUT ME -->
+        <section id="about" class="py-20 px-4 max-w-7xl mx-auto border-t border-stark-cyan/20 relative">
+            <div class="text-center mb-16">
+                <span class="text-xs font-mono tracking-widest text-stark-cyan font-bold uppercase px-3 py-1 rounded bg-stark-cyan/10 border border-stark-cyan/30 inline-block mb-3">
+                    PILOT BIOMETRIC PROFILE
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-orbitron font-extrabold text-white">
+                    MISSION PROFILE & CREDENTIALS
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-stark-cyan to-transparent mx-auto mt-3"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
+                <!-- Biography Dossier -->
+                <div class="md:col-span-7 hud-card p-6 sm:p-8 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-4 border-b border-cyan-500/20 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+                                <span class="font-orbitron text-xs text-cyan-300 font-bold uppercase tracking-wider">
+                                    BIOLOGICAL & PROFESSIONAL SPEC
+                                </span>
+                            </div>
+                            <span class="text-xs font-mono text-stark-gold">B.TECH CSE '29</span>
+                        </div>
+
+                        <p class="text-base sm:text-lg text-slate-200 leading-relaxed font-rajdhani font-semibold">
+                            "Curious and hardworking Computer Science student with a strong interest in programming, problem-solving, web design and development, software development, cybersecurity, AI, cloud computing, IoT and emerging technologies. Focused on continuous learning, teamwork and building meaningful technology solutions."
+                        </p>
+
+                        <div class="mt-6 space-y-3 font-sans text-sm text-slate-300 leading-relaxed">
+                            <p>
+                                Operating out of <span class="text-white font-semibold">Alappuzha, Kerala</span>, I apply analytical discipline and forward-looking engineering to architect high-performance web systems, explore AI within digital forensics, and protect systems against evolving cyber vectors.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Languages Spoken Matrix -->
+                    <div class="mt-8 pt-6 border-t border-cyan-500/20">
+                        <span class="text-xs font-orbitron text-cyan-400 font-bold block mb-3 uppercase tracking-wider">
+                            <i class="fa-solid fa-language mr-1"></i> Multi-Lingual Communications HUD
+                        </span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="bg-black/50 p-2.5 rounded border border-cyan-500/20 text-center">
+                                <span class="text-xs font-bold text-white block">Malayalam</span>
+                                <span class="text-[10px] text-emerald-400 font-mono">Native</span>
+                            </div>
+                            <div class="bg-black/50 p-2.5 rounded border border-cyan-500/20 text-center">
+                                <span class="text-xs font-bold text-white block">English</span>
+                                <span class="text-[10px] text-stark-cyan font-mono">Fluent</span>
+                            </div>
+                            <div class="bg-black/50 p-2.5 rounded border border-cyan-500/20 text-center">
+                                <span class="text-xs font-bold text-white block">Tamil</span>
+                                <span class="text-[10px] text-amber-400 font-mono">Intermediate</span>
+                            </div>
+                            <div class="bg-black/50 p-2.5 rounded border border-cyan-500/20 text-center">
+                                <span class="text-xs font-bold text-white block">Arabic</span>
+                                <span class="text-[10px] text-slate-400 font-mono">Basic</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Trajectory Timeline -->
+                <div class="md:col-span-5 space-y-4">
+                    <div class="hud-card-gold p-6 rounded-2xl h-full flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between pb-3 border-b border-amber-500/30 mb-5">
+                                <span class="font-orbitron text-xs text-stark-gold font-bold uppercase tracking-wider">
+                                    <i class="fa-solid fa-graduation-cap mr-1"></i> Academic Sequence
+                                </span>
+                                <span class="text-[10px] font-mono text-amber-200">TIMELINE</span>
+                            </div>
+
+                            <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-amber-500/40">
+                                
+                                <!-- B.Tech -->
+                                <div class="relative">
+                                    <div class="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-stark-gold ring-4 ring-amber-500/20"></div>
+                                    <span class="text-[10px] font-mono text-stark-gold font-bold">2025 - 2029 (EXPECTED)</span>
+                                    <h4 class="text-base font-bold text-white font-rajdhani">B.Tech in Computer Science & Engineering</h4>
+                                    <p class="text-xs text-slate-300">Carmel College Of Engineering And Technology</p>
+                                    <p class="text-[11px] text-cyan-300 mt-1 font-mono">Core: Algorithms, AI/ML, Cyber Defense, Web Engg.</p>
+                                </div>
+
+                                <!-- Higher Secondary -->
+                                <div class="relative">
+                                    <div class="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-cyan-400 ring-4 ring-cyan-500/20"></div>
+                                    <span class="text-[10px] font-mono text-cyan-400 font-bold">GRADUATED 2025</span>
+                                    <h4 class="text-base font-bold text-white font-rajdhani">Higher Secondary Education</h4>
+                                    <p class="text-xs text-slate-300">SNMHSS</p>
+                                </div>
+
+                                <!-- High School -->
+                                <div class="relative">
+                                    <div class="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-400 ring-4 ring-slate-500/20"></div>
+                                    <span class="text-[10px] font-mono text-slate-400 font-bold">GRADUATED 2023</span>
+                                    <h4 class="text-base font-bold text-white font-rajdhani">High School Certification</h4>
+                                    <p class="text-xs text-slate-300">Maria Montessori Central School</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Core Strengths -->
+                        <div class="mt-6 pt-4 border-t border-amber-500/20">
+                            <span class="text-[11px] font-orbitron text-stark-gold font-bold uppercase block mb-2">Tactical Core Strengths</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">Leadership</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">Decision Making</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/30">High Typing Agility</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-200">Public Speaking</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-200">Pressure Handling</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: STARK ARCHIVES & PROJECTS -->
+        <section id="projects" class="py-20 px-4 max-w-7xl mx-auto border-t border-stark-cyan/20">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-xs font-mono tracking-widest text-stark-crimson font-bold uppercase px-3 py-1 rounded bg-rose-950/40 border border-rose-500/40 inline-block mb-3">
+                        CLASSIFIED LAB INITIATIVES
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-orbitron font-extrabold text-white">
+                        STARK PROJECT ARCHIVES
+                    </h2>
+                </div>
+                <div class="text-xs font-mono text-cyan-400 mt-4 md:mt-0">
+                    STATUS: PROTOCOL MARK-V ENGAGED
+                </div>
+            </div>
+
+            <!-- Flagship Project: AI Digital Evidence Investigator -->
+            <div class="hud-card p-6 sm:p-10 rounded-2xl relative overflow-hidden group mb-10">
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded text-xs font-orbitron font-bold bg-stark-crimson/20 text-rose-400 border border-rose-500/40">
+                                FLAGSHIP INNOVATION
+                            </span>
+                            <span class="text-xs font-mono text-cyan-400">CYBER FORENSICS // AI</span>
+                        </div>
+
+                        <h3 class="text-2xl sm:text-3xl font-orbitron font-bold text-white group-hover:text-cyan-300 transition-colors">
+                            AI Digital Evidence Investigator
+                        </h3>
+
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed font-rajdhani font-semibold">
+                            An autonomous forensic intelligence concept engineered to assist cyber incident responders. Leverages artificial intelligence for digital evidence identification, pattern investigation, integrity cross-verification, and legal-grade forensic presentation.
+                        </p>
+
+                        <!-- Key Pillars -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="p-3 bg-black/50 rounded border border-cyan-500/30">
+                                <i class="fa-solid fa-magnifying-glass-chart text-stark-cyan text-base mb-1"></i>
+                                <h5 class="text-xs font-orbitron font-bold text-white">Forensic AI Scan</h5>
+                                <p class="text-[11px] text-slate-400 font-mono">Automated log & artifact anomaly detection.</p>
+                            </div>
+                            <div class="p-3 bg-black/50 rounded border border-amber-500/30">
+                                <i class="fa-solid fa-shield-halved text-stark-gold text-base mb-1"></i>
+                                <h5 class="text-xs font-orbitron font-bold text-white">Evidence Integrity</h5>
+                                <p class="text-[11px] text-slate-400 font-mono">Cryptographic validation & chain-of-custody.</p>
+                            </div>
+                            <div class="p-3 bg-black/50 rounded border border-rose-500/30">
+                                <i class="fa-solid fa-file-shield text-rose-400 text-base mb-1"></i>
+                                <h5 class="text-xs font-orbitron font-bold text-white">Case Presentation</h5>
+                                <p class="text-[11px] text-slate-400 font-mono">Human-readable courtroom intelligence.</p>
+                            </div>
+                        </div>
+
+                        <!-- Tech Badges -->
+                        <div class="flex flex-wrap gap-2 pt-3">
+                            <span class="text-xs font-mono px-2 py-1 rounded bg-cyan-950/50 border border-cyan-500/40 text-cyan-300">Artificial Intelligence</span>
+                            <span class="text-xs font-mono px-2 py-1 rounded bg-cyan-950/50 border border-cyan-500/40 text-cyan-300">Cybersecurity</span>
+                            <span class="text-xs font-mono px-2 py-1 rounded bg-cyan-950/50 border border-cyan-500/40 text-cyan-300">Data Analysis</span>
+                            <span class="text-xs font-mono px-2 py-1 rounded bg-cyan-950/50 border border-cyan-500/40 text-cyan-300">TinyML & Edge</span>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Diagnostic Scanner -->
+                    <div class="lg:col-span-5 bg-[#020617] rounded-xl p-5 border border-cyan-500/40 relative">
+                        <div class="flex items-center justify-between pb-3 border-b border-cyan-500/30 text-xs font-mono text-cyan-300">
+                            <span><i class="fa-solid fa-radar mr-1 animate-spin"></i> TELEMETRY ACTIVE</span>
+                            <span class="text-stark-gold">NODES: 104 / OK</span>
+                        </div>
+
+                        <div class="relative h-48 my-3 rounded bg-black/80 border border-dashed border-cyan-500/40 flex items-center justify-center overflow-hidden">
+                            <div class="absolute inset-x-0 h-1 bg-cyan-400 shadow-[0_0_12px_#00f0ff] animate-scanline"></div>
+                            
+                            <div class="text-center p-4">
+                                <i class="fa-solid fa-fingerprint text-5xl text-stark-cyan/80 mb-2"></i>
+                                <div class="font-orbitron text-xs text-white tracking-widest">ANALYZING ARTIFACT PACKET</div>
+                                <div class="font-mono text-[10px] text-cyan-400 mt-1">SHA-256: 8f4e2c91b5a037... MATCHED</div>
+                            </div>
+                        </div>
+
+                        <button onclick="runForensicDiagnostic()" class="w-full py-2 bg-gradient-to-r from-stark-cyan/20 to-blue-600/30 hover:from-stark-cyan/40 hover:to-blue-600/50 text-stark-cyan text-xs font-orbitron font-bold border border-cyan-400/50 rounded uppercase tracking-wider transition">
+                            <i class="fa-solid fa-play mr-1"></i> Run Neural Forensic Diagnosis
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Hackathons, Summits & Activities -->
+            <div class="mt-8">
+                <h3 class="text-xl font-orbitron font-bold text-white mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-stark-gold"></i> Hackathons & Tactical Activities
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Global Game Jam KSUM -->
+                    <div class="hud-card p-5 rounded-xl flex flex-col justify-between hover:border-stark-gold transition duration-300">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                    YEAR 2026
+                                </span>
+                                <i class="fa-solid fa-gamepad text-cyan-400 text-lg"></i>
+                            </div>
+                            <h4 class="text-lg font-orbitron font-bold text-white">Global Game Jam</h4>
+                            <p class="text-xs font-rajdhani font-semibold text-cyan-300 mt-1">Kerala Startup Mission (KSUM)</p>
+                            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                                Rapid game development sprint. Engineered interactive mechanisms, rapid logic pipelines, and real-time interactive game loops.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-3 border-t border-cyan-500/20 text-[11px] font-mono text-slate-400">
+                            Role: Logic Developer & Creative Thinker
+                        </div>
+                    </div>
+
+                    <!-- IBM Hackathon ICSET -->
+                    <div class="hud-card p-5 rounded-xl flex flex-col justify-between hover:border-stark-cyan transition duration-300">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                                    YEAR 2026
+                                </span>
+                                <i class="fa-solid fa-server text-stark-cyan text-lg"></i>
+                            </div>
+                            <h4 class="text-lg font-orbitron font-bold text-white">IBM Hackathon ICSET</h4>
+                            <p class="text-xs font-rajdhani font-semibold text-cyan-300 mt-1">International Conference (ICSET)</p>
+                            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                                High-intensity competitive coding and software prototype development solving enterprise and real-world computing hurdles.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-3 border-t border-cyan-500/20 text-[11px] font-mono text-slate-400">
+                            Role: Problem Solving & Prototype Engineering
+                        </div>
+                    </div>
+
+                    <!-- National Service Scheme -->
+                    <div class="hud-card p-5 rounded-xl flex flex-col justify-between hover:border-rose-500 transition duration-300">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                                    YEAR 2025
+                                </span>
+                                <i class="fa-solid fa-users text-rose-400 text-lg"></i>
+                            </div>
+                            <h4 class="text-lg font-orbitron font-bold text-white">National Service Scheme</h4>
+                            <p class="text-xs font-rajdhani font-semibold text-cyan-300 mt-1">NSS Volunteer - SNMHSS</p>
+                            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                                Community leadership, organization of social welfare drives, public team coordination, and crisis operations under pressure.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-3 border-t border-cyan-500/20 text-[11px] font-mono text-slate-400">
+                            Role: Volunteer & Event Coordinator
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TECHNICAL SUIT DIAGNOSTICS / SKILL MATRIX -->
+        <section id="skills" class="py-20 px-4 max-w-7xl mx-auto border-t border-stark-cyan/20">
+            <div class="text-center mb-16">
+                <span class="text-xs font-mono tracking-widest text-stark-gold font-bold uppercase px-3 py-1 rounded bg-amber-950/40 border border-amber-500/40 inline-block mb-3">
+                    SYSTEMS TELEMETRY & HARDWARE INTEGRATION
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-orbitron font-extrabold text-white">
+                    TECHNICAL CAPABILITIES MATRIX
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-stark-gold to-transparent mx-auto mt-3"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Web & Software Development -->
+                <div class="hud-card p-6 rounded-xl hover:border-stark-cyan transition group">
+                    <div class="w-12 h-12 rounded-lg bg-cyan-950/60 border border-stark-cyan/40 flex items-center justify-center text-stark-cyan text-xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <h3 class="text-lg font-orbitron font-bold text-white mb-2">Web & Software Dev</h3>
+                    <p class="text-xs text-slate-300 mb-4 font-rajdhani font-semibold">
+                        Building responsive, modern user interfaces and robust backend logic systems.
+                    </p>
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Web Design & UI</span>
+                            <span class="text-stark-cyan">92%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-stark-cyan h-1.5 rounded" style="width: 92%"></div></div>
+                        <div class="flex justify-between pt-1">
+                            <span class="text-slate-400">Software Logic</span>
+                            <span class="text-stark-cyan">88%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-stark-cyan h-1.5 rounded" style="width: 88%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Cybersecurity & Defense -->
+                <div class="hud-card p-6 rounded-xl hover:border-stark-crimson transition group">
+                    <div class="w-12 h-12 rounded-lg bg-rose-950/60 border border-stark-crimson/40 flex items-center justify-center text-stark-crimson text-xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-shield-virus"></i>
+                    </div>
+                    <h3 class="text-lg font-orbitron font-bold text-white mb-2">Cybersecurity</h3>
+                    <p class="text-xs text-slate-300 mb-4 font-rajdhani font-semibold">
+                        Network defense, vulnerability assessment, digital evidence handling, and protocols.
+                    </p>
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Threat Analysis</span>
+                            <span class="text-rose-400">85%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-rose-500 h-1.5 rounded" style="width: 85%"></div></div>
+                        <div class="flex justify-between pt-1">
+                            <span class="text-slate-400">Digital Forensics</span>
+                            <span class="text-rose-400">89%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-rose-500 h-1.5 rounded" style="width: 89%"></div></div>
+                    </div>
+                </div>
+
+                <!-- AI, ML & TinyML -->
+                <div class="hud-card p-6 rounded-xl hover:border-stark-gold transition group">
+                    <div class="w-12 h-12 rounded-lg bg-amber-950/60 border border-stark-gold/40 flex items-center justify-center text-stark-gold text-xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h3 class="text-lg font-orbitron font-bold text-white mb-2">Artificial Intelligence</h3>
+                    <p class="text-xs text-slate-300 mb-4 font-rajdhani font-semibold">
+                        Machine Learning heuristics, Edge AI models, and TinyML microcontrollers.
+                    </p>
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">AI Architectures</span>
+                            <span class="text-stark-gold">86%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-stark-gold h-1.5 rounded" style="width: 86%"></div></div>
+                        <div class="flex justify-between pt-1">
+                            <span class="text-slate-400">TinyML & IoT</span>
+                            <span class="text-stark-gold">82%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-stark-gold h-1.5 rounded" style="width: 82%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Cloud & Systems -->
+                <div class="hud-card p-6 rounded-xl hover:border-cyan-400 transition group">
+                    <div class="w-12 h-12 rounded-lg bg-blue-950/60 border border-blue-400/40 flex items-center justify-center text-blue-400 text-xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-cloud-bolt"></i>
+                    </div>
+                    <h3 class="text-lg font-orbitron font-bold text-white mb-2">Cloud & Systems</h3>
+                    <p class="text-xs text-slate-300 mb-4 font-rajdhani font-semibold">
+                        Distributed cloud architecture, data pipelines, and high-speed typing agility.
+                    </p>
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Cloud Infrastructure</span>
+                            <span class="text-blue-400">80%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-blue-400 h-1.5 rounded" style="width: 80%"></div></div>
+                        <div class="flex justify-between pt-1">
+                            <span class="text-slate-400">Rapid Execution</span>
+                            <span class="text-blue-400">95%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div class="bg-blue-400 h-1.5 rounded" style="width: 95%"></div></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Additional Strengths Badge Bar -->
+            <div class="mt-10 hud-card p-6 rounded-xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-keyboard text-stark-cyan text-2xl"></i>
+                    <div>
+                        <div class="text-xs font-orbitron font-bold text-white">High Typing Speed & Rapid Research</div>
+                        <div class="text-[11px] text-slate-400 font-rajdhani">Quick problem solving, accelerated turnaround, and research-first execution</div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-mono font-semibold">
+                    <span class="px-3 py-1 bg-slate-900 border border-cyan-500/40 rounded text-cyan-300">Data Analysis</span>
+                    <span class="px-3 py-1 bg-slate-900 border border-amber-500/40 rounded text-amber-300">Critical Thinking</span>
+                    <span class="px-3 py-1 bg-slate-900 border border-rose-500/40 rounded text-rose-300">Rapid Learning</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: INTERACTIVE J.A.R.V.I.S. TERMINAL -->
+        <section id="terminal" class="py-20 px-4 max-w-5xl mx-auto border-t border-stark-cyan/20">
+            <div class="text-center mb-10">
+                <span class="text-xs font-mono tracking-widest text-stark-cyan font-bold uppercase px-3 py-1 rounded bg-stark-cyan/10 border border-stark-cyan/30 inline-block mb-3">
+                    COMMAND CONSOLE
+                </span>
+                <h2 class="text-3xl font-orbitron font-extrabold text-white">
+                    J.A.R.V.I.S. TERMINAL INTERFACE
+                </h2>
+                <p class="text-xs font-mono text-cyan-400 mt-2">Type commands to interrogate Akbarsha's dossier</p>
+            </div>
+
+            <div class="hud-card rounded-2xl overflow-hidden border-2 border-cyan-500/40 shadow-[0_0_30px_rgba(0,240,255,0.15)] bg-[#020617]/95">
+                <div class="bg-slate-900/90 px-4 py-2.5 border-b border-cyan-500/30 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span class="text-xs font-mono font-bold text-slate-300 ml-2 tracking-wider">
+                            JARVIS_SHELL://root@akbarsha-stark
+                        </span>
+                    </div>
+                    <span class="text-[10px] font-mono text-cyan-400">ENCRYPTED PROTOCOL</span>
+                </div>
+
+                <div id="terminalScreen" class="p-4 sm:p-6 font-mono text-xs sm:text-sm text-cyan-300 space-y-2 h-72 overflow-y-auto leading-relaxed">
+                    <div class="text-stark-gold font-bold">
+                        [J.A.R.V.I.S.] At your service, sir. Mark-LXXXV telemetry initialized.
+                    </div>
+                    <div class="text-slate-400">
+                        Type <span class="text-stark-cyan font-bold">'help'</span> for instructions, or try <span class="text-stark-gold font-bold">'suit-up'</span>, <span class="text-stark-gold font-bold">'skills'</span>, <span class="text-stark-gold font-bold">'projects'</span>, <span class="text-stark-gold font-bold">'unmute'</span>, <span class="text-stark-gold font-bold">'arc-charge'</span>, <span class="text-stark-gold font-bold">'clear'</span>.
+                    </div>
+                </div>
+
+                <div class="p-3 bg-black/80 border-t border-cyan-500/30 flex items-center space-x-3">
+                    <span class="text-stark-cyan font-mono font-bold pl-2 text-sm">&gt;</span>
+                    <input type="text" id="terminalCmdInput" placeholder="Enter Stark command (e.g. 'suit-up', 'skills')..." class="w-full bg-transparent text-white font-mono text-xs sm:text-sm focus:outline-none placeholder-slate-500">
+                    <button onclick="handleTerminalRun()" class="px-4 py-1.5 bg-stark-cyan/20 hover:bg-stark-cyan/30 text-stark-cyan text-xs font-orbitron font-bold rounded border border-stark-cyan/40 transition">
+                        RUN
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Action Chips -->
+            <div class="flex flex-wrap justify-center gap-2 mt-4 text-xs font-mono">
+                <button onclick="runTerminalCommand('suit-up')" class="px-2.5 py-1 rounded bg-slate-900 border border-amber-500/30 text-amber-300 hover:border-amber-400">suit-up</button>
+                <button onclick="runTerminalCommand('unmute')" class="px-2.5 py-1 rounded bg-slate-900 border border-cyan-500/30 text-cyan-300 hover:border-cyan-400">unmute</button>
+                <button onclick="runTerminalCommand('skills')" class="px-2.5 py-1 rounded bg-slate-900 border border-cyan-500/30 text-cyan-300 hover:border-cyan-400">skills</button>
+                <button onclick="runTerminalCommand('projects')" class="px-2.5 py-1 rounded bg-slate-900 border border-cyan-500/30 text-cyan-300 hover:border-cyan-400">projects</button>
+                <button onclick="runTerminalCommand('arc-charge')" class="px-2.5 py-1 rounded bg-slate-900 border border-rose-500/30 text-rose-400 hover:border-rose-400">arc-charge</button>
+                <button onclick="runTerminalCommand('contact')" class="px-2.5 py-1 rounded bg-slate-900 border border-cyan-500/30 text-cyan-300 hover:border-cyan-400">contact</button>
+            </div>
+        </section>
+
+        <!-- SECTION 6: STARK UPLINK / CONTACT TRANSMISSION -->
+        <section id="contact" class="py-20 px-4 max-w-5xl mx-auto border-t border-stark-cyan/20">
+            <div class="text-center mb-12">
+                <span class="text-xs font-mono tracking-widest text-stark-crimson font-bold uppercase px-3 py-1 rounded bg-rose-950/40 border border-rose-500/40 inline-block mb-3">
+                    SUBMIT ENCRYPTED TRANSMISSION
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-orbitron font-extrabold text-white">
+                    CONNECT WITH AKBARSHA S
+                </h2>
+                <p class="text-sm font-rajdhani text-cyan-200 mt-2 font-semibold">
+                    Available for software engineering opportunities, AI research collaborations, and internships.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                
+                <!-- Channels Card -->
+                <div class="md:col-span-5 space-y-4">
+                    <div class="hud-card p-6 rounded-xl space-y-4">
+                        <div class="text-xs font-orbitron text-stark-cyan font-bold tracking-wider uppercase border-b border-cyan-500/20 pb-2">
+                            DIRECT COMMS CHANNEL
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-stark-cyan">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">PRIMARY EMAIL</span>
+                                <a href="mailto:Akbarsha863249@gmail.com" class="text-sm font-bold text-white hover:text-stark-cyan break-all">
+                                    Akbarsha863249@gmail.com
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-stark-gold">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">ENCRYPTED VOICE LINE</span>
+                                <a href="tel:+919020501390" class="text-sm font-bold text-white hover:text-stark-gold">
+                                    +91 9020501390
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-rose-400">
+                                <i class="fa-brands fa-linkedin"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">PROFESSIONAL NETWORK</span>
+                                <a href="https://linkedin.com/in/akbarsha-s-032968322" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-cyan-300 hover:underline">
+                                    linkedin.com/in/akbarsha-s-032968322
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-white">
+                                <i class="fa-brands fa-github"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">CODE REPOSITORIES</span>
+                                <a href="https://github.com/akbarshah-s" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-cyan-300 hover:underline break-all">
+                                    github.com/akbarshah-s
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-pink-400">
+                                <i class="fa-brands fa-instagram"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">INSTAGRAM</span>
+                                <a href="https://www.instagram.com/_akbarshah_.x/" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-cyan-300 hover:underline break-all">
+                                    @_akbarshah_.x
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-emerald-400">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">WHATSAPP</span>
+                                <a href="https://wa.me/919020501390" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-cyan-300 hover:underline">
+                                    +91 9020501390
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-400 block">LOCATION</span>
+                                <span class="text-sm font-bold text-white">
+                                    Alappuzha, Kerala, India
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 text-center">
+                        <p class="text-xs font-rajdhani text-amber-200 italic">
+                            "Part of the journey is the end. But the code we build continues to innovate."
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Form Card -->
+                <div class="md:col-span-7 hud-card p-6 sm:p-8 rounded-xl">
+                    <form id="starkContactForm" onsubmit="transmitMessagePacket(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-mono text-stark-cyan mb-1.5 uppercase tracking-wider">
+                                Sender Call-Sign / Full Name *
+                            </label>
+                            <input type="text" name="name" maxlength="120" required placeholder="e.g. Tony Stark or Recruiter Name" class="w-full bg-black/60 border border-cyan-500/40 rounded px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-mono text-stark-cyan mb-1.5 uppercase tracking-wider">
+                                Return Frequency / Email Address *
+                            </label>
+                            <input type="email" name="email" maxlength="254" required placeholder="e.g. contact@domain.com" class="w-full bg-black/60 border border-cyan-500/40 rounded px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-mono text-stark-cyan mb-1.5 uppercase tracking-wider">
+                                Transmission Subject
+                            </label>
+                            <input type="text" name="subject" maxlength="200" placeholder="Engineering Collaboration / Career Opportunity" class="w-full bg-black/60 border border-cyan-500/40 rounded px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-mono text-stark-cyan mb-1.5 uppercase tracking-wider">
+                                Encrypted Message Packet *
+                            </label>
+                            <textarea name="message" maxlength="5000" rows="4" required placeholder="Write your transmission to Akbarsha S..." class="w-full bg-black/60 border border-cyan-500/40 rounded px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"></textarea>
+                        </div>
+
+                        <p class="text-[11px] font-mono text-slate-400" id="transmissionPrivacyNotice">
+                            Your name, email, subject, and message will be saved to a private Excel file on this site's server.
+                        </p>
+
+                        <button type="submit" id="transmitBtn" class="w-full py-3.5 rounded bg-gradient-to-r from-stark-crimson via-red-600 to-amber-600 hover:from-red-600 hover:to-stark-crimson text-white font-orbitron font-black text-xs uppercase tracking-widest shadow-lg shadow-red-900/50 flex items-center justify-center gap-2 transition duration-300">
+                            <i class="fa-solid fa-bolt"></i> FIRE REPULSOR TRANSMISSION
+                        </button>
+                    </form>
+
+                    <!-- Transmission Modal Feedback -->
+                    <div id="transmissionResult" role="status" aria-live="polite" class="hidden mt-4 p-3.5 rounded bg-emerald-950/80 border border-emerald-400 text-emerald-200 text-xs font-mono flex items-center gap-2.5">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+                        <span>TRANSMISSION CONFIRMED. Your message has been saved.</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-stark-cyan/20 bg-[#02050b] py-8 px-4 text-center text-xs font-mono text-slate-400">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-stark-cyan animate-ping"></span>
+                <span class="font-orbitron font-bold text-slate-200">AKBARSHA S // PORTFOLIO MARK-LXXXV</span>
+            </div>
+            <div>
+                Crafted for <span class="text-stark-cyan">Computer Science</span>, <span class="text-stark-crimson">Iron Man</span> & <span class="text-stark-gold">Stark Tech</span>
+            </div>
+            <div>
+                © 2026 Akbarsha S. All systems nominal.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT: SYNTHESIZED SFX & VIDEO HUD LOGIC -->
+    <script>
+        // Web Audio API Synthesizer (No external audio files needed for SFX!)
+        let synthCtx = null;
+        let sfxEnabled = true;
+
+        function getSynthContext() {
+            if (!synthCtx) {
+                synthCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (synthCtx.state === 'suspended') {
+                synthCtx.resume();
+            }
+            return synthCtx;
+        }
+
+        function playStarkSound(type) {
+            if (!sfxEnabled) return;
+            try {
+                const ctx = getSynthContext();
+                const now = ctx.currentTime;
+
+                if (type === 'repulsor') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.exponentialRampToValueAtTime(1500, now + 0.14);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.38);
+
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.35, now + 0.11);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.43);
+
+                } else if (type === 'click') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(900, now);
+                    osc.frequency.setValueAtTime(1300, now + 0.03);
+
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+
+                } else if (type === 'suit') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(750, now + 0.28);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.55);
+
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.25, now + 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.58);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+
+                } else if (type === 'charge') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.exponentialRampToValueAtTime(1800, now + 0.65);
+
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.linearRampToValueAtTime(0.28, now + 0.45);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.77);
+                }
+            } catch (err) {
+                console.error("Synthesizer error: ", err);
+            }
+        }
+
+        function toggleMasterAudio() {
+            sfxEnabled = !sfxEnabled;
+            const sfxIcon = document.getElementById('sfxIcon');
+            const sfxLabel = document.getElementById('sfxLabel');
+            if (sfxEnabled) {
+                sfxIcon.className = "fa-solid fa-volume-high";
+                sfxLabel.textContent = "SFX: ON";
+                playStarkSound('click');
+            } else {
+                sfxIcon.className = "fa-solid fa-volume-xmark";
+                sfxLabel.textContent = "SFX: OFF";
+            }
+        }
+
+        // VIDEO HUD CONTROLS FOR AKBARSHA'S PORTRAIT
+        const starkVideo = document.getElementById('starkVideo');
+        const playIcon = document.getElementById('playIcon');
+        const playText = document.getElementById('playText');
+        const muteIcon = document.getElementById('muteIcon');
+        const muteText = document.getElementById('muteText');
+        const unmutePromptBanner = document.getElementById('unmutePromptBanner');
+
+        // Safe playback helpers to handle HTML5 video play/pause promise collisions
+        let playPromise = null;
+
+        function safePlay() {
+            if (!starkVideo) return;
+            try {
+                playPromise = starkVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            playPromise = null;
+                            if (playIcon) playIcon.className = "fa-solid fa-pause";
+                            if (playText) playText.textContent = "PAUSE";
+                        })
+                        .catch(err => {
+                            playPromise = null;
+                            // Ignore AbortError caused by normal pause/replay interruptions
+                            if (err.name !== 'AbortError') {
+                                console.warn("Video playback exception handled:", err);
+                            }
+                        });
+                }
+            } catch (err) {
+                console.warn("Playback invoke error:", err);
+            }
+        }
+
+        function safePause() {
+            if (!starkVideo) return;
+            if (playPromise !== null) {
+                playPromise
+                    .then(() => {
+                        starkVideo.pause();
+                        if (playIcon) playIcon.className = "fa-solid fa-play";
+                        if (playText) playText.textContent = "PLAY";
+                    })
+                    .catch(() => {
+                        starkVideo.pause();
+                        if (playIcon) playIcon.className = "fa-solid fa-play";
+                        if (playText) playText.textContent = "PLAY";
+                    });
+            } else {
+                starkVideo.pause();
+                if (playIcon) playIcon.className = "fa-solid fa-play";
+                if (playText) playText.textContent = "PLAY";
+            }
+        }
+
+        function unmuteStarkVideo(e) {
+            if (e) e.stopPropagation();
+            if (!starkVideo) return;
+            starkVideo.muted = false;
+            starkVideo.volume = 1.0;
+            starkVideo.currentTime = 0;
+            safePlay();
+            if (unmutePromptBanner) unmutePromptBanner.classList.add('hidden');
+            if (muteIcon) muteIcon.className = "fa-solid fa-volume-high";
+            if (muteText) muteText.textContent = "MUTE";
+            writeTerminal("[SUIT AUDIO] Voice feed unmuted. Pilot Akbarsha audio broadcast active!");
+        }
+
+        function handleVideoContainerClick(event) {
+            if (starkVideo && starkVideo.muted) {
+                unmuteStarkVideo();
+            } else {
+                toggleVideoPlay();
+            }
+        }
+
+        function toggleVideoPlay() {
+            if (!starkVideo) return;
+            playStarkSound('click');
+            if (starkVideo.paused) {
+                safePlay();
+                writeTerminal("[HUD OPTICAL] Resuming video playback.");
+            } else {
+                safePause();
+                writeTerminal("[HUD OPTICAL] Video stream paused.");
+            }
+        }
+
+        function replaySuitVideo() {
+            if (!starkVideo) return;
+            playStarkSound('suit');
+            
+            if (playPromise !== null) {
+                playPromise.then(() => {
+                    starkVideo.currentTime = 0;
+                    safePlay();
+                }).catch(() => {
+                    starkVideo.currentTime = 0;
+                    safePlay();
+                });
+            } else {
+                starkVideo.currentTime = 0;
+                safePlay();
+            }
+            writeTerminal("[MARK LXXXV] Suit-up & Nanotech Helmet sequence initiated.");
+        }
+
+        function toggleVideoMuteState() {
+            if (!starkVideo) return;
+            playStarkSound('click');
+            starkVideo.muted = !starkVideo.muted;
+            if (starkVideo.muted) {
+                if (muteIcon) muteIcon.className = "fa-solid fa-volume-xmark";
+                if (muteText) muteText.textContent = "UNMUTE";
+                writeTerminal("[AUDIO] Helmet audio muted.");
+            } else {
+                if (unmutePromptBanner) unmutePromptBanner.classList.add('hidden');
+                if (muteIcon) muteIcon.className = "fa-solid fa-volume-high";
+                if (muteText) muteText.textContent = "MUTE";
+                writeTerminal("[AUDIO] Helmet internal audio channel open.");
+            }
+        }
+
+        function fullscreenVideoHUD() {
+            const container = document.getElementById('videoContainer');
+            if (!container) return;
+            playStarkSound('click');
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function loadLocalCustomVideo(event) {
+            const file = event.target.files[0];
+            if (file && starkVideo) {
+                const objectUrl = URL.createObjectURL(file);
+                safePause();
+                starkVideo.src = objectUrl;
+                starkVideo.muted = false;
+                safePlay();
+                if (unmutePromptBanner) unmutePromptBanner.classList.add('hidden');
+                if (muteIcon) muteIcon.className = "fa-solid fa-volume-high";
+                if (muteText) muteText.textContent = "MUTE";
+                writeTerminal(`[SYSTEM] Loaded local video telemetry: ${file.name}`);
+            }
+        }
+
+        function handleVideoFallback(videoEl) {
+            console.warn("Video stream fallback activated.");
+            const fallbackPhoto = document.getElementById('fallbackPhoto');
+            if (fallbackPhoto) fallbackPhoto.classList.remove('hidden');
+        }
+
+        // Live Simulated Heart Rate Monitor
+        setInterval(() => {
+            const bpmSpan = document.getElementById('hudBpm');
+            if (bpmSpan) {
+                const bpm = 74 + Math.floor(Math.random() * 8);
+                bpmSpan.textContent = bpm + " BPM";
+            }
+        }, 2200);
+
+        // Arc Reactor Power Surge
+        let reactorLvl = 100;
+        function overchargeReactorCore() {
+            playStarkSound('repulsor');
+            reactorLvl += 50;
+            if (reactorLvl > 3000) reactorLvl = 100;
+
+            const textEl = document.getElementById('reactorPowerText');
+            const barEl = document.getElementById('reactorPowerBar');
+            
+            textEl.textContent = reactorLvl + "%";
+            barEl.style.width = Math.min(100, (reactorLvl / 5)) + "%";
+
+            document.body.classList.add('brightness-125');
+            setTimeout(() => {
+                document.body.classList.remove('brightness-125');
+            }, 120);
+
+            writeTerminal(`[REPULSOR DISCHARGE] Energy Surge detected: ${reactorLvl}% output capacity!`);
+        }
+
+        // Forensic AI Scan Simulation
+        function runForensicDiagnostic() {
+            playStarkSound('charge');
+            writeTerminal("[FORENSICS] Scanning forensic evidence package... Neural analysis running.");
+            setTimeout(() => {
+                playStarkSound('click');
+                writeTerminal("[SUCCESS] Integrity index: 99.8%. No anti-forensic tampering detected in file clusters.");
+            }, 750);
+        }
+
+        // J.A.R.V.I.S. Terminal Logic
+        const terminalScreen = document.getElementById('terminalScreen');
+        const terminalCmdInput = document.getElementById('terminalCmdInput');
+
+        function writeTerminal(msg, isUser = false) {
+            const line = document.createElement('div');
+            if (isUser) {
+                line.className = "text-white font-bold";
+                line.textContent = "> " + msg;
+            } else {
+                line.className = "text-cyan-300";
+                line.innerHTML = msg;
+            }
+            terminalScreen.appendChild(line);
+            terminalScreen.scrollTop = terminalScreen.scrollHeight;
+        }
+
+        function handleTerminalRun() {
+            const cmd = terminalCmdInput.value.trim().toLowerCase();
+            if (!cmd) return;
+            runTerminalCommand(cmd);
+            terminalCmdInput.value = '';
+        }
+
+        if (terminalCmdInput) {
+            terminalCmdInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    handleTerminalRun();
+                }
+            });
+        }
+
+        function runTerminalCommand(cmd) {
+            playStarkSound('click');
+            writeTerminal(cmd, true);
+
+            switch(cmd) {
+                case 'help':
+                    writeTerminal(
+                        "AVAILABLE COMMANDS:<br>" +
+                        "- <span class='text-stark-gold'>suit-up</span>: Replay suit-up & mask-reveal video<br>" +
+                        "- <span class='text-stark-gold'>unmute</span>: Enable Akbarsha's voice audio feed<br>" +
+                        "- <span class='text-stark-gold'>skills</span>: Display technical competencies<br>" +
+                        "- <span class='text-stark-gold'>projects</span>: Forensic AI Investigator & Hackathons<br>" +
+                        "- <span class='text-stark-gold'>arc-charge</span>: Trigger repulsor overcharge<br>" +
+                        "- <span class='text-stark-gold'>contact</span>: Direct communication channels<br>" +
+                        "- <span class='text-stark-gold'>clear</span>: Clear terminal window"
+                    );
+                    break;
+
+                case 'suit-up':
+                    replaySuitVideo();
+                    break;
+
+                case 'unmute':
+                case 'welcome':
+                    unmuteStarkVideo();
+                    break;
+
+                case 'skills':
+                    writeTerminal(
+                        "<b>PILOT CAPABILITIES:</b><br>" +
+                        "• Web Design & Development<br>" +
+                        "• Software Engineering & Architecture<br>" +
+                        "• Cybersecurity & Threat Intelligence<br>" +
+                        "• Artificial Intelligence & TinyML<br>" +
+                        "• Cloud Infrastructure & IoT Systems<br>" +
+                        "• High Typing Speed & Rapid Research"
+                    );
+                    break;
+
+                case 'projects':
+                    writeTerminal(
+                        "<b>ACTIVE LAB INITIATIVES:</b><br>" +
+                        "1. <b>AI Digital Evidence Investigator</b>: Automated cyber forensics.<br>" +
+                        "2. <b>Global Game Jam (KSUM 2026)</b>: Rapid logic pipelines.<br>" +
+                        "3. <b>IBM Hackathon ICSET (2026)</b>: Enterprise coding."
+                    );
+                    break;
+
+                case 'arc-charge':
+                    overchargeReactorCore();
+                    break;
+
+                case 'contact':
+                    writeTerminal(
+                        "<b>COMMUNICATION FREQUENCIES:</b><br>" +
+                        "• Email: Akbarsha863249@gmail.com<br>" +
+                        "• Phone: +91 9020501390<br>" +
+                        "• LinkedIn: linkedin.com/in/akbarsha-s-032968322<br>" +
+                        "• GitHub: github.com/akbarshah-s<br>" +
+                        "• Instagram: @_akbarshah_.x<br>" +
+                        "• WhatsApp: +91 9020501390<br>" +
+                        "• Base: Alappuzha, Kerala, India"
+                    );
+                    break;
+
+                case 'clear':
+                    terminalScreen.innerHTML = '';
+                    break;
+
+                default:
+                    writeTerminal(`Command '${cmd}' not recognized. Type 'help' for instructions.`);
+            }
+        }
+
+        // Contact Packet Form Submission
+        async function transmitMessagePacket(event) {
+            event.preventDefault();
+            playStarkSound('repulsor');
+            const btn = document.getElementById('transmitBtn');
+            const feedback = document.getElementById('transmissionResult');
+            const feedbackText = feedback.querySelector('span');
+            const feedbackIcon = feedback.querySelector('i');
+            const form = document.getElementById('starkContactForm');
+
+            btn.disabled = true;
+            btn.innerHTML = "<i class='fa-solid fa-spinner animate-spin'></i> TRANSMITTING ENCRYPTED PACKET...";
+
+            try {
+                const response = await fetch('/api/transmissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(new FormData(form)))
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Unable to save the transmission.');
+
+                feedback.classList.remove('hidden', 'bg-rose-950/80', 'border-rose-400', 'text-rose-200');
+                feedback.classList.add('bg-emerald-950/80', 'border-emerald-400', 'text-emerald-200');
+                feedbackIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+                feedbackText.textContent = 'TRANSMISSION CONFIRMED. Your message has been saved.';
+                form.reset();
+                writeTerminal("[COMMUNICATION SAVED] Your message was added to the private transmission workbook.");
+            } catch (err) {
+                feedback.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-400', 'text-emerald-200');
+                feedback.classList.add('bg-rose-950/80', 'border-rose-400', 'text-rose-200');
+                feedbackIcon.className = 'fa-solid fa-triangle-exclamation text-rose-400 text-lg';
+                feedbackText.textContent = `TRANSMISSION FAILED. ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<i class='fa-solid fa-bolt'></i> FIRE REPULSOR TRANSMISSION";
+            }
+        }
+
+        // Click SFX on interactive elements
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('click', () => {
+                if (el.id !== 'sfxToggleBtn' && el.id !== 'transmitBtn') {
+                    playStarkSound('click');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
